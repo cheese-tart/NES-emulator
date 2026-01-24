@@ -18,25 +18,26 @@ public:
 
     enum FLAGS6502
     {
-        C = (1 << 0),
-		Z = (1 << 1),
-		I = (1 << 2),
-		D = (1 << 3),
-		B = (1 << 4),
-		U = (1 << 5),
-		V = (1 << 6),
-		N = (1 << 7),
+        C = (1 << 0), // carry bit
+		Z = (1 << 1), // zero
+		I = (1 << 2), // disable interrupts
+		D = (1 << 3), // decimal mode (unused in this implementation)
+		B = (1 << 4), // break
+		U = (1 << 5), // unused
+		V = (1 << 6), // overflow
+		N = (1 << 7), // negative
     };
 
-    uint8_t a = 0x00;
-	uint8_t x = 0x00;
-	uint8_t y = 0x00;
-	uint8_t stkp = 0x00;
-	uint16_t pc = 0x0000;
-	uint8_t status = 0x00;
+    uint8_t a = 0x00; // acc
+	uint8_t x = 0x00; // reg
+	uint8_t y = 0x00; // reg
+	uint8_t stkp = 0x00; // stack ptr
+	uint16_t pc = 0x0000; // program counter
+	uint8_t status = 0x00; // status register
 
     void ConnectBus(Bus *n) { bus = n; }
 
+	// addressing modes
     uint8_t IMP();	uint8_t IMM();
 	uint8_t ZP0();	uint8_t ZPX();
 	uint8_t ZPY();	uint8_t REL();
@@ -44,6 +45,7 @@ public:
 	uint8_t ABY();	uint8_t IND();
 	uint8_t IZX();	uint8_t IZY();
 
+	// opcodes
     uint8_t ADC();	uint8_t AND();	uint8_t ASL();	uint8_t BCC();
 	uint8_t BCS();	uint8_t BEQ();	uint8_t BIT();	uint8_t BMI();
 	uint8_t BNE();	uint8_t BPL();	uint8_t BRK();	uint8_t BVC();
