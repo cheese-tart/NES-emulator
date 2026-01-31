@@ -1,1 +1,1 @@
-# Nintendo System Emulator in C/C++
+# Nintendo System Emulator in C++
