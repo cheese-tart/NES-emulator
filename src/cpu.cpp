@@ -207,26 +207,255 @@ uint8_t cpu::REL()
     return 0;
 }
 
-// opcodes
+// instructions
+// helper
 uint8_t cpu::fetch()
 {
-    if (!(lookup[opcode].addrmode == &cpu::IMP))
-        fetched = read(addr_abs);
-    return fetched;
+	if (!(lookup[opcode].addrmode == &cpu::IMP))
+		fetched = read(addr_abs);
+	return fetched;
 }
 
-uint8_t cpu::AND()
+// load/store
+uint8_t cpu::LDA()
 {
-    fetch();
-    a &= fetched;
+	fetch();
+	a = fetched;
 	setFlag(Z, a == 0x00);
 	setFlag(N, a & 0x80);
 	return 1;
 }
 
-uint8_t cpu::BCS()
+uint8_t cpu::LDX()
 {
-	if (getFlag(C) == 1)
+	fetch();
+	x = fetched;
+	setFlag(Z, x == 0x00);
+	setFlag(N, x & 0x80);
+	return 1;
+}
+
+uint8_t cpu::LDY()
+{
+	fetch();
+	y = fetched;
+	setFlag(Z, y == 0x00);
+	setFlag(N, y & 0x80);
+	return 1;
+}
+
+uint8_t cpu::STA()
+{
+
+}
+
+uint8_t cpu::STX()
+{
+
+}
+
+uint8_t cpu::STY()
+{
+
+}
+
+// register transfers
+uint8_t cpu::TAX()
+{
+
+}
+
+uint8_t cpu::TAY()
+{
+
+}
+
+uint8_t cpu::TXA()
+{
+
+}
+
+uint8_t cpu::TYA()
+{
+
+}
+
+// stack
+uint8_t cpu::TSX()
+{
+
+}
+
+uint8_t cpu::TXS()
+{
+
+}
+
+uint8_t cpu::PHA()
+{
+	write(0x0100 + stkp, a);
+	stkp--;
+	return 0;
+}
+
+uint8_t cpu::PHP()
+{
+
+}
+
+uint8_t cpu::PLA()
+{
+	stkp++;
+	a = read(0x0100 + stkp);
+	setFlag(Z, a == 0x00);
+	setFlag(N, a & 0x80);
+	return 0;
+}
+
+uint8_t cpu::PLP()
+{
+
+}
+
+// logic
+uint8_t cpu::AND()
+{
+	fetch();
+	a &= fetched;
+	setFlag(Z, a == 0x00);
+	setFlag(N, a & 0x80);
+	return 1;
+}
+
+uint8_t cpu::EOR()
+{
+
+}
+
+uint8_t cpu::ORA()
+{
+
+}
+
+uint8_t cpu::BIT()
+{
+
+}
+
+// arithmetic
+uint8_t cpu::ADC()
+{
+	fetch();
+	temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)getFlag(C);
+	setFlag(C, temp > 255);
+	setFlag(Z, (temp & 0x00FF) == 0);
+	setFlag(N, temp & 0x80);
+	setFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
+	a = temp & 0x00FF;
+	return 1;
+}
+
+uint8_t cpu::SBC()
+{
+	fetch();
+	uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
+
+	temp = (uint16_t)a + value + (uint16_t)getFlag(C);
+	setFlag(C, temp & 0xFF00);
+	setFlag(Z, (temp & 0x00FF) == 0);
+	setFlag(V, (temp ^ (uint16_t)a) & (temp ^ value) & 0x0080);
+	setFlag(N, temp & 0x0080);
+	a = temp & 0x00FF;
+	return 1;
+}
+
+uint8_t cpu::CMP()
+{
+
+}
+
+uint8_t cpu::CPX()
+{
+
+}
+
+uint8_t cpu::CPY()
+{
+
+}
+
+// increments & decrements
+uint8_t cpu::INC()
+{
+
+}
+
+uint8_t cpu::INX()
+{
+
+}
+
+uint8_t cpu::INY()
+{
+
+}
+
+uint8_t cpu::DEC()
+{
+
+}
+
+uint8_t cpu::DEX()
+{
+
+}
+
+uint8_t cpu::DEY()
+{
+
+}
+
+// shifts
+uint8_t cpu::ASL()
+{
+
+}
+
+uint8_t cpu::LSR()
+{
+
+}
+
+uint8_t cpu::ROL()
+{
+
+}
+
+uint8_t cpu::ROR()
+{
+
+}
+
+// jumps & calls
+uint8_t cpu::JMP()
+{
+
+}
+
+uint8_t cpu::JSR()
+{
+
+}
+
+uint8_t cpu::RTS()
+{
+
+}
+
+// branches
+uint8_t cpu::BCC()
+{
+	if (getFlag(C) == 0)
 	{
 		cycles++;
 		addr_abs = pc + addr_rel;
@@ -239,9 +468,9 @@ uint8_t cpu::BCS()
 	return 0;
 }
 
-uint8_t cpu::BCC()
+uint8_t cpu::BCS()
 {
-	if (getFlag(C) == 0)
+	if (getFlag(C) == 1)
 	{
 		cycles++;
 		addr_abs = pc + addr_rel;
@@ -344,6 +573,7 @@ uint8_t cpu::BVS()
 	return 0;
 }
 
+// status flag changes
 uint8_t cpu::CLC()
 {
 	setFlag(C, false);
@@ -368,48 +598,47 @@ uint8_t cpu::CLV()
 	return 0;
 }
 
-uint8_t cpu::ADC()
+uint8_t cpu::SEC()
 {
-	fetch();
-	temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)getFlag(C);
-	setFlag(C, temp > 255);
-	setFlag(Z, (temp & 0x00FF) == 0);
-	setFlag(N, temp & 0x80);
-	setFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
-	a = temp & 0x00FF;
-	return 1;
+
 }
 
-uint8_t cpu::SBC()
+uint8_t cpu::SED()
 {
-	fetch();
-	uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
 
-	temp = (uint16_t)a + value + (uint16_t)getFlag(C);
-	setFlag(C, temp & 0xFF00);
-	setFlag(Z, (temp & 0x00FF) == 0);
-	setFlag(V, (temp ^ (uint16_t)a) & (temp ^ value) & 0x0080);
-	setFlag(N, temp & 0x0080);
-	a = temp & 0x00FF;
-	return 1;
 }
 
-uint8_t cpu::PHA()
+uint8_t cpu::SEI()
 {
-	write(0x0100 + stkp, a);
-	stkp--;
-	return 0;
+
 }
 
-uint8_t cpu::PLA()
+// system functions
+uint8_t cpu::BRK()
+{
+
+}
+
+uint8_t cpu::NOP()
+{
+
+}
+
+uint8_t cpu::RTI()
 {
 	stkp++;
-	a = read(0x0100 + stkp);
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	status = read(0x0100 + stkp);
+	status &= ~B;
+	status &= ~U;
+
+	stkp++;
+	pc = (uint16_t)read(0x0100 + stkp);
+	stkp++;
+	pc |= (uint16_t)read(0x0100 + stkp) << 8;
 	return 0;
 }
 
+// misc.
 void cpu::reset()
 {
 	a = 0;
@@ -476,20 +705,7 @@ void cpu::nmi()
 	cycles = 8;
 }
 
-uint8_t cpu::RTI()
-{
-	stkp++;
-	status = read(0x0100 + stkp);
-	status &= ~B;
-	status &= ~U;
-
-	stkp++;
-	pc = (uint16_t)read(0x0100 + stkp);
-	stkp++;
-	pc |= (uint16_t)read(0x0100 + stkp) << 8;
-	return 0;
-}
-
+// deals with illegal instructions
 uint8_t cpu::XXX()
 {
 	return 0;
