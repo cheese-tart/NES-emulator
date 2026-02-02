@@ -246,49 +246,68 @@ uint8_t cpu::LDY()
 
 uint8_t cpu::STA()
 {
-
+	write(addr_abs, a);
+	return 0;
 }
 
 uint8_t cpu::STX()
 {
-
+	write(addr_abs, x);
+	return 0;
 }
 
 uint8_t cpu::STY()
 {
-
+	write (addr_abs, y);
+	return 0;
 }
 
 // register transfers
 uint8_t cpu::TAX()
 {
-
+	x = a;
+	setFlag(Z, x == 0x00);
+	setFlag(N, x & 0x80);
+	return 0;
 }
 
 uint8_t cpu::TAY()
 {
-
+	y = a;
+	setFlag(Z, y == 0x00);
+	setFlag(N, y & 0x80);
+	return 0;
 }
 
 uint8_t cpu::TXA()
 {
-
+	a = x;
+	setFlag(Z, a == 0x00);
+	setFlag(N, a & 0x80);
+	return 0;
 }
 
 uint8_t cpu::TYA()
 {
-
+	a = y;
+	setFlag(Z, a == 0x00);
+	setFlag(N, a & 0x80);
+	return 0;
 }
 
 // stack
 uint8_t cpu::TSX()
 {
-
+	x = stkp;
+	setFlag(Z, x == 0x00);
+	setFlag(N, x & 0x80);
+	return 0;
 }
 
 uint8_t cpu::TXS()
 {
-
+	stkp = x;
+	return 0;
 }
 
 uint8_t cpu::PHA()
@@ -300,7 +319,11 @@ uint8_t cpu::PHA()
 
 uint8_t cpu::PHP()
 {
-
+	write(0x0100 + stkp, status | B | U);
+	setFlag(B, 0);
+	setFlag(U, 0);
+	stkp--;
+	return 0;
 }
 
 uint8_t cpu::PLA()
@@ -314,7 +337,10 @@ uint8_t cpu::PLA()
 
 uint8_t cpu::PLP()
 {
-
+	stkp++;
+	status = read(0x0100 + stkp);
+	setFlag(U, 1);
+	return 0;
 }
 
 // logic
@@ -329,17 +355,30 @@ uint8_t cpu::AND()
 
 uint8_t cpu::EOR()
 {
-
+	fetch();
+	a ^= fetched;
+	setFlag(Z, a == 0x00);
+	setFlag(N, a & 0x80);
+	return 1;
 }
 
 uint8_t cpu::ORA()
 {
-
+	fetch();
+	a |= fetched;
+	setFlag(Z, a == 0x00);
+	setFlag(N, a & 0x80);
+	return 1;
 }
 
 uint8_t cpu::BIT()
 {
-
+	fetch();
+	temp = a & fetched;
+	setFlag(Z, (temp & 0x00FF) == 0);
+	setFlag(V, fetched & (1 << 6));
+	setFlag(N , fetched & (1 << 7));
+	return 0;
 }
 
 // arithmetic
@@ -371,54 +410,96 @@ uint8_t cpu::SBC()
 
 uint8_t cpu::CMP()
 {
+	fetch();
+	temp = (uint16_t)a - (uint16_t)fetched;
 
+	setFlag(C, a >= fetched);
+	setFlag(Z, (temp & 0x00FF) == 0x0000);
+	setFlag(N, temp & 0x0080);
+	return 1;
 }
 
 uint8_t cpu::CPX()
 {
+	fetch();
+	temp = (uint16_t)x - (uint16_t)fetched;
 
+	setFlag(C, x >= fetched);
+	setFlag(Z, (temp & 0x00FF) == 0x0000);
+	setFlag(N, temp & 0x0080);
+	return 0;
 }
 
 uint8_t cpu::CPY()
 {
+	fetch();
+	temp = (uint16_t)y - (uint16_t)fetched;
 
+	setFlag(C, y >= fetched);
+	setFlag(Z, (temp & 0x00FF) == 0x0000);
+	setFlag(N, temp & 0x0080);
+	return 0;
 }
 
 // increments & decrements
 uint8_t cpu::INC()
 {
+	fetch();
+	temp = fetched + 1;
+	write(addr_abs, temp & 0x00FF);
 
+	setFlag(Z, (temp & 0x00FF) == 0x0000);
+	setFlag(N, temp & 0x0080);
+	return 0;
 }
 
 uint8_t cpu::INX()
 {
-
+	x++;
+	setFlag(Z, x == 0x00);
+	setFlag(N, x & 0x80);
+	return 0;
 }
 
 uint8_t cpu::INY()
 {
-
+	y++;
+	setFlag(Z, y == 0x00);
+	setFlag(N, y & 0x80);
+	return 0;
 }
 
 uint8_t cpu::DEC()
 {
+	fetch();
+	temp = fetched - 1;
+	write(addr_abs, temp & 0x00FF);
 
+	setFlag(Z, (temp & 0x00FF) == 0x0000);
+	setFlag(N, temp & 0x0080);
+	return 0;
 }
 
 uint8_t cpu::DEX()
 {
-
+	x--;
+	setFlag(Z, x == 0x00);
+	setFlag(N, x & 0x80);
+	return 0;
 }
 
 uint8_t cpu::DEY()
 {
-
+	y--;
+	setFlag(Z, y == 0x00);
+	setFlag(N, y & 0x80);
+	return 0;
 }
 
 // shifts
 uint8_t cpu::ASL()
 {
-
+	fetch();
 }
 
 uint8_t cpu::LSR()
