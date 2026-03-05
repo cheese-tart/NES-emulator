@@ -61,8 +61,8 @@ private:
 
 	uint8_t fetch();
 
-    uint8_t GetFlag(CPU_FLAGS f);
-	void SetFlag(CPU_FLAGS f, bool v);
+    uint8_t getFlag(CPU_FLAGS f);
+	void setFlag(CPU_FLAGS f, bool v);
 
     struct INSTRUCTION
     {

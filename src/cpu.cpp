@@ -500,37 +500,99 @@ uint8_t cpu::DEY()
 uint8_t cpu::ASL()
 {
 	fetch();
+	setFlag(C, fetched & 0x80);
+	temp = (uint16_t)fetched << 1;
+	setFlag(Z, (temp & 0x00FF) == 0);
+	setFlag(N, temp & 0x0080);
+
+	if (lookup[opcode].addrmode == &cpu::IMP) {
+		a = temp & 0x00FF;
+	} else {
+		write(addr_abs, temp & 0x00FF);
+	}
+	return 0;
 }
 
 uint8_t cpu::LSR()
 {
+	fetch();
+	setFlag(C, fetched & 0x01);
+	temp = fetched >> 1;
+	setFlag(Z, (temp & 0x00FF) == 0);
+	setFlag(N, temp & 0x0080);
 
+	if (lookup[opcode].addrmode == $cpu::IMP) {
+		a = temp & 0x00FF;
+	} else {
+		write(addr_abs, temp & 0x00FF);
+	}
+	return 0;
 }
 
 uint8_t cpu::ROL()
 {
+	fetch();
+	temp = (uint16_t)(fetched << 1) | getFlag(C);
+	setFlag(C, temp & 0xFF00);
+	setFlag(Z, (temp & 0x00FF) == 0);
+	setFlag(N, temp & 0x0080);
 
+	if (lookup[opcode].addrmode == $cpu::IMP) {
+		a = temp & 0x00FF;
+	} else {
+		write(addr_abs, temp & 0x00FF);
+	}
+	return 0;
 }
 
 uint8_t cpu::ROR()
 {
+	fetch();
+	temp = (uint16_t)(fetched >> 1) | (uint16_t)(getFlag(C) << 7);
+	setFlag(C, fetched & 0x01);
+	setFlag(Z, (temp & 0x00FF) == 0);
+	setFlag(N, temp & 0x0080);
 
+	if (lookup[opcode].addrmode == $cpu::IMP) {
+		a = temp & 0x00FF;
+	} else {
+		write(addr_abs, temp & 0x00FF);
+	}
+	return 0;
 }
 
 // jumps & calls
 uint8_t cpu::JMP()
 {
-
+	pc = addr_abs;
+	return 0;
 }
 
 uint8_t cpu::JSR()
 {
+	pc--;
 
+	write(0x0100 + stkp, (pc >> 8) & 0x00FF);
+	stkp--;
+
+	write(0x0100 + stkp, pc & 0x00FF);
+	stkp--;
+
+	pc = addr_abs;
+
+	return 0;
 }
 
 uint8_t cpu::RTS()
 {
+	stkp++;
+	pc = (uint16_t)read(0x0100 + stkp);
 
+	stkp++;
+	pc |= (uint16_t)read(0x0100 + stkp) << 8;
+
+	pc++;
+	return 0;
 }
 
 // branches
@@ -681,28 +743,55 @@ uint8_t cpu::CLV()
 
 uint8_t cpu::SEC()
 {
-
+	setFlag(C, true);
+	return 0;
 }
 
 uint8_t cpu::SED()
 {
-
+	setFlag(D, true);
+	return 0;
 }
 
 uint8_t cpu::SEI()
 {
-
+	setFlag(I, true);
+	return 0;
 }
 
 // system functions
 uint8_t cpu::BRK()
 {
+	pc++;
+	setFlag(I, 1);
 
+	write(0x0100 + stkp, (pc >> 8) & 0x00FF);
+	stkp--;
+	write(0x0100 + stkp, pc & 0x00FF);
+	stkp--;
+
+	setFlag(B, 1);
+	write(0x0100 + stkp, status);
+	stkp--;
+	setFlag(B, 0);
+
+	pc = (uint16_t)read(0xFFFE) | ((uint16_t)read(0xFFFF) << 8);
+	return 0;
 }
 
 uint8_t cpu::NOP()
 {
-
+	switch (opcode) {
+		case 0x1C:
+		case 0x3C:
+		case 0x5C:
+		case 0x7C:
+		case 0xDC:
+		case 0xFC:
+			return 1;
+			break;
+	}
+	return 0;
 }
 
 uint8_t cpu::RTI()
