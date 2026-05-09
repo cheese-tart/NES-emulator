@@ -13,6 +13,8 @@ Cartridge::Cartridge(const std::string& sFileName) {
         char unused[5];
     } header;
 
+    bImageValid = false;
+
     std::ifstream ifs;
     ifs.open(sFileName, std::ifstream::binary);
     if (ifs.is_open()) {
@@ -24,6 +26,7 @@ Cartridge::Cartridge(const std::string& sFileName) {
 
         // determine mapper id
         nMapperID = ((header.mapper2 >> 4) << 4) | (header.mapper1 >> 4);
+        mirror = (header.mapper1 & 0x01) ? VERTICAL : HORIZONTAL;
 
         // "discover" file format
         uint8_t nFileType = 1;
@@ -35,7 +38,16 @@ Cartridge::Cartridge(const std::string& sFileName) {
             ifs.read((char*)vPRGMemory.data(), vPRGMemory.size());
 
             nCHRBanks = header.chr_rom_chunks;
-            vCHRMemory.resize(nCHRBanks * 8192);
+            if (nCHRBanks == 0)
+            {
+                // Create CHR RAM
+                vCHRMemory.resize(8192);
+            }
+            else
+            {
+                // Allocate for ROM
+                vCHRMemory.resize(nCHRBanks * 8192);
+            }
             ifs.read((char*)vCHRMemory.data(), vCHRMemory.size());
         }
         if (nFileType == 2) {
@@ -51,6 +63,10 @@ Cartridge::Cartridge(const std::string& sFileName) {
 }
 
 Cartridge::~Cartridge() {
+}
+
+bool Cartridge::bImageValid() {
+    return bImageValid;
 }
 
 bool Cartridge::cpuRead(uint16_t address, uint8_t & data) {
@@ -87,4 +103,10 @@ bool Cartridge::ppuWrite(uint16_t address, uint8_t data) {
         return true;
     }
     return false;
+}
+
+void Cartridge::reset() {
+    if (pMapper != nullptr) {
+        pMapper->reset();
+    }
 }

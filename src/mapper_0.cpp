@@ -6,6 +6,9 @@ Mapper_0::Mapper_0(uint8_t prgBanks, uint8_t chrBanks) : Mapper(prgBanks, chrBan
 Mapper_0::~Mapper_0() {
 }
 
+void Mapper_0::reset() {
+}
+
 bool Mapper_0::cpuMapRead(uint16_t address, uint32_t &mapped_addr) {
     if (address >= 0x8000 && address <= 0xFFFF) {
         mapped_addr = address & (nPRGBanks > 1 ? 0x7FFF : 0x3FFF);

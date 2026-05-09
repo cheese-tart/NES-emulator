@@ -18,6 +18,7 @@ public: // devices on bus
     std::shared_ptr<Cartridge> cart;
     // fake ram
     uint8_t cpuRam[2048];
+    uint8_t controller[2];
 
 public: // bus read & write
     void cpuWrite(uint16_t address, uint8_t data);
@@ -25,6 +26,7 @@ public: // bus read & write
 
 private: // a count of how many clocks have passed
     uint32_t nSystemClockCounter = 0;
+    uint8_t controller_state[2];
 
 public: // system interface
     void InsertCartridge(const std::shared_ptr<Cartridge>& cartridge);

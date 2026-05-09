@@ -12,6 +12,8 @@ public:
     virtual bool ppuMapRead(uint16_t address, uint32_t &mapped_addr) = 0;
     virtual bool ppuMapWrite(uint16_t address, uint32_t &mapped_addr) = 0;
 
+    virtual void reset() = 0;
+
 protected:
     uint8_t nPRGBanks = 0;
     uint8_t nCHRBanks = 0;
