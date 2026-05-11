@@ -7,4 +7,4 @@ Currently only supports Mapper 0, so not many games are playable. The PPU output
 
 https://github.com/user-attachments/assets/1443a7f3-2f6c-4828-a36b-a9d922f086f8
 
-Future extensions to work on are the APU and more mapper support.
+Future extensions to work on include the APU and more mapper support.
