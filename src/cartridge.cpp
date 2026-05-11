@@ -1,6 +1,7 @@
 #include "cartridge.h"
 
 Cartridge::Cartridge(const std::string& sFileName) {
+    // iNES format header
     struct sHeader {
         char name[4];
         uint8_t prg_rom_chunks;
@@ -21,6 +22,8 @@ Cartridge::Cartridge(const std::string& sFileName) {
         // read file header
         ifs.read((char*)&header, sizeof(sHeader));
 
+        // If a "trainer" exists we just need to read past
+        // it before we get to the good stuff
         if (header.mapper1 & 0x04)
             ifs.seekg(512, std::ios_base::cur);
 
@@ -32,6 +35,7 @@ Cartridge::Cartridge(const std::string& sFileName) {
         uint8_t nFileType = 1;
         if (nFileType == 0) {
         }
+
         if (nFileType == 1) {
             nPRGBanks = header.prg_rom_chunks;
             vPRGMemory.resize(nPRGBanks * 16384);
@@ -50,6 +54,7 @@ Cartridge::Cartridge(const std::string& sFileName) {
             }
             ifs.read((char*)vCHRMemory.data(), vCHRMemory.size());
         }
+
         if (nFileType == 2) {
         }
 
@@ -106,6 +111,8 @@ bool Cartridge::ppuWrite(uint16_t address, uint8_t data) {
 }
 
 void Cartridge::reset() {
+    // Note: This does not reset the ROM contents,
+    // but does reset the mapper.
     if (pMapper != nullptr) {
         pMapper->reset();
     }

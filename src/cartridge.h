@@ -17,8 +17,8 @@ public:
     enum MIRROR {
         HORIZONTAL,
         VERTICAL,
-        ONESCREEN_LO
-        ONESCREEN_HI
+        ONESCREEN_LO,
+        ONESCREEN_HI,
     } mirror = HORIZONTAL;
 
 private:
@@ -34,11 +34,14 @@ private:
     std::shared_ptr<Mapper> pMapper;
 
 public:
+    // communication with main bus
     bool cpuRead(uint16_t address, uint8_t &data);
     bool cpuWrite(uint16_t address, uint8_t data);
 
+    // communication with ppu bus
     bool ppuRead(uint16_t address, uint8_t &data);
     bool ppuWrite(uint16_t address, uint8_t data);
 
+    // permits system rest of mapper to known state
     void reset();
 };
