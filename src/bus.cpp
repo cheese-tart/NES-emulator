@@ -37,7 +37,7 @@ void Bus::cpuWrite(uint16_t address, uint8_t data)
         dma_transfer = true;
     } else if (address >= 0x4016 && address <= 0x4017) {
         // "Lock In" controller state at this time
-        controller_state[addr & 0x0001] = controller[addr & 0x0001];
+        controller_state[address & 0x0001] = controller[address & 0x0001];
     }
 }
 
@@ -53,10 +53,10 @@ uint8_t Bus::cpuRead(uint16_t address, bool readOnly)
     } else if (address >= 0x2000 && address <= 0x3FFF) {
         // PPU Address range, mirrored every 8
         data = ppu.cpuRead(address & 0x0007, readOnly);
-    } else if (addr >= 0x4016 && addr <= 0x4017) {
+    } else if (address >= 0x4016 && address <= 0x4017) {
         // Read out the MSB of the controller status word
-        data = (controller_state[addr & 0x0001] & 0x80) > 0;
-        controller_state[addr & 0x0001] <<= 1;
+        data = (controller_state[address & 0x0001] & 0x80) > 0;
+        controller_state[address & 0x0001] <<= 1;
     }
 
     return data;

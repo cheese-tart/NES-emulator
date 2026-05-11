@@ -70,7 +70,7 @@ Cartridge::Cartridge(const std::string& sFileName) {
 Cartridge::~Cartridge() {
 }
 
-bool Cartridge::bImageValid() {
+bool Cartridge::ImageValid() {
     return bImageValid;
 }
 

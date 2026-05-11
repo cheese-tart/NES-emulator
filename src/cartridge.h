@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -8,8 +9,8 @@
 
 class Cartridge {
 public:
-    cartridge(const std::string& sFileName);
-    ~cartridge();
+    Cartridge(const std::string& sFileName);
+    ~Cartridge();
 
 public:
     bool ImageValid();
